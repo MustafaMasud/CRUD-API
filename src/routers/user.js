@@ -10,6 +10,8 @@ const router = new express.Router()
 //adding the auth middleware for this specific route
 const auth = require('../middleware/auth')
 
+//adding the multer npm
+const multer = require('multer')
 //post creats a new user in 'User', when user uses http method of post(with url) then this API sends back a message 'testing'
 //adding async allows to use await
 
@@ -241,5 +243,32 @@ router.delete('/users/me', auth,  async (req,res)=>{
     }
 })
 
+//configure multer
+const upload = multer({
+    //destination for the file upload
+    'dest': 'avatars',
+    //restricts the file size
+    limits: {
+        fileSize: 1000000
+    },
+    //allows to filter the file types
+    fileFilter(req, file, cb){
+        //if the file does not match the file extensions
+        if (!file.originalname.match(/\.(jpg|png|jpeg)$/)){
+            return cb(new Error('Please upload an image file'))
+        }
+        
+        //if it does match
+         cb(undefined, true)
+
+    }
+})
+
+router.post('/users/me/avatar', upload.single('avatar'), (req,res)=>{
+    res.status(200).send()
+},//error hanlder to customize multer errors
+(error,req,res,next)=>{
+    res.status(400).send({error: error.message})
+})
 //export the router so index.js can use it
 module.exports = router
