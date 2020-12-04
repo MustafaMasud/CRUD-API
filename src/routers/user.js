@@ -12,6 +12,10 @@ const auth = require('../middleware/auth')
 
 //adding the multer npm
 const multer = require('multer')
+
+//requiring sharp
+const sharp = require('sharp')
+
 //post creats a new user in 'User', when user uses http method of post(with url) then this API sends back a message 'testing'
 //adding async allows to use await
 
@@ -245,8 +249,7 @@ router.delete('/users/me', auth,  async (req,res)=>{
 
 //configure multer
 const upload = multer({
-    //destination for the file upload
-    'dest': 'avatars',
+
     //restricts the file size
     limits: {
         fileSize: 1000000
@@ -264,11 +267,49 @@ const upload = multer({
     }
 })
 
-router.post('/users/me/avatar', upload.single('avatar'), (req,res)=>{
+//router to upload profile picture
+router.post('/users/me/avatar', auth, upload.single('avatar'),async(req,res)=>{
+    //multer data is accessible here
+    //setting the user avatar to the beffer data from multer
+
+    //gave sharp data about the file
+    //converts this to a png and resizes
+    //sends back the binary data that sharp provides
+    const buffer = await sharp(req.file.buffer).resize({width: 250, height: 250}).png().toBuffer()
+    req.user.avatar = buffer
+
+    await req.user.save()
     res.status(200).send()
 },//error hanlder to customize multer errors
 (error,req,res,next)=>{
     res.status(400).send({error: error.message})
+})
+
+//adding delete funciton in the avatars
+router.delete('/users/me/avatar', auth, async(req,res)=>{
+    try{
+        req.user.avatar = undefined
+        await req.user.save()
+        res.status(200).send()
+    }catch(e){
+        res.status(500).send()
+    }
+})
+
+//fetching the avatar
+router.get('/users/:id/avatar', async (req,res)=>{
+    try{
+        const user = await User.findById(req.params.id)
+
+        if(!user || !user.avatar){
+            throw new Error()
+        }
+
+        res.set('Content-Type','image/png')
+        res.send(user.avatar)
+    }catch(e){
+        res.status(404).send()
+    }
 })
 //export the router so index.js can use it
 module.exports = router
