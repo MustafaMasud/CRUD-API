@@ -3,12 +3,13 @@ const mongoose = require('mongoose')
 
 
 //connection to Mongo database, takes in URL and name
-mongoose.connect('mongodb://127.0.0.1:27017/task-manager-api', {
+mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
 
     //index are created, quickly acces data
     useCreateIndex: true,
-    useFindAndModify:false
+    useFindAndModify:false,
+    useUnifiedTopology: true 
 })
 
 

@@ -16,6 +16,10 @@ const multer = require('multer')
 //requiring sharp
 const sharp = require('sharp')
 
+//selects welcome email from email list Object destructuring
+const {sendWelcomeEmail} = require('../emails/account')
+const { sendCancelEmail } = require('../emails/account')
+
 //post creats a new user in 'User', when user uses http method of post(with url) then this API sends back a message 'testing'
 //adding async allows to use await
 
@@ -33,6 +37,8 @@ router.post('/users',async (req,res)=>{
         //no return value needed, as no constant needed
         await user.save()
 
+        //sneding the welcom email
+        sendWelcomeEmail(user.email, user.name)
         //sending status and user
         res.status(201).send({user,token})
 
@@ -241,6 +247,7 @@ router.delete('/users/me', auth,  async (req,res)=>{
         // }
         //removes the user
         await req.user.remove()
+        sendCancelEmail(req.user.email, req.user.name)
         res.status(200).send(req.user)
     }catch(e){
         res.status(500).send(e)

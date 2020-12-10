@@ -14,7 +14,7 @@ const auth = async (req,res,next) => {
         const token = req.header('Authorization').replace('Bearer ','')
         
         //ensure that token is valid
-        const decoded = jwt.verify(token,'thisisasecretsign')
+        const decoded = jwt.verify(token,process.env.JWT_TOKEN)
        
         //grabbing the user based of the decoded token and it's ID
         const user = await User.findOne({_id: decoded._id, 'tokens.token':token})

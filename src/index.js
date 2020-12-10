@@ -18,7 +18,7 @@ const taskRouter = require('./routers/task')
 
 //listening on specific port number
 const app = express()
-const port = process.env.PORT || 3000
+const port = process.env.PORT
 
 
 //lets the express server parse incomming JSON data
